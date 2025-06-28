@@ -81,8 +81,9 @@ RSpec.describe Veri::Authentication do
 
     before { controller.request = ActionDispatch::TestRequest.create }
 
-    it "logs in the user" do
-      expect { subject }.to change(controller, :current_user).from(nil).to(user)
+    it "logs in the user and returns true" do
+      expect(subject).to be true
+      expect(controller.current_user).to eq(user)
     end
 
     context "when the user is not an instance of the configured user model" do
@@ -90,6 +91,15 @@ RSpec.describe Veri::Authentication do
 
       it "raises an error" do
         expect { subject }.to raise_error(Veri::InvalidArgumentError, "Expected an instance of User, got `123`")
+      end
+    end
+
+    context "when the user account is locked" do
+      let(:user) { User.create!(locked: true) }
+
+      it "returns false and does not log in the user" do
+        expect(subject).to be false
+        expect(controller.current_user).to be_nil
       end
     end
   end
@@ -107,6 +117,10 @@ RSpec.describe Veri::Authentication do
 
     it "logs out the user" do
       expect { subject }.to change(user.veri_sessions, :count).from(1).to(0)
+    end
+
+    it "deletes the veri_token cookie" do
+      expect { subject }.to change { controller.send(:cookies).encrypted[:veri_token] }.from(be_present).to(be_nil)
     end
   end
 

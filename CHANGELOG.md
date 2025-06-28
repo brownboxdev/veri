@@ -1,3 +1,9 @@
+## v0.3.0
+
+### Breaking
+
+- Added account lockout feature
+
 ## v0.2.2
 
 ### Bugs

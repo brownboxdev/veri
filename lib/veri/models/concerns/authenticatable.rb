@@ -34,6 +34,14 @@ module Veri
       )
     end
 
+    def lock!
+      update!(locked: true, locked_at: Time.current)
+    end
+
+    def unlock!
+      update!(locked: false, locked_at: nil)
+    end
+
     private
 
     def hasher

@@ -82,4 +82,48 @@ RSpec.describe Veri::Authenticatable do
       end
     end
   end
+
+  describe "#lock!" do
+    subject { user.lock! }
+
+    let(:user) { User.create! }
+
+    it "locks the user and sets locked_at timestamp" do
+      expect { subject }
+        .to change(user, :locked).from(false).to(true)
+        .and change(user, :locked_at).from(nil).to be_within(1.second).of(Time.current)
+    end
+  end
+
+  describe "#unlock!" do
+    subject { user.unlock! }
+
+    let(:user) { User.create!(locked: true, locked_at: 1.hour.ago) }
+
+    it "unlocks the user and clears locked_at timestamp" do
+      expect { subject }
+        .to change(user, :locked).from(true).to(false)
+        .and change(user, :locked_at).from(be_present).to(nil)
+    end
+  end
+
+  describe "#locked?" do
+    subject { user.locked? }
+
+    context "when user is not locked" do
+      let(:user) { User.create!(locked: false) }
+
+      it "returns false" do
+        expect(subject).to be false
+      end
+    end
+
+    context "when user is locked" do
+      let(:user) { User.create!(locked: true) }
+
+      it "returns true" do
+        expect(subject).to be true
+      end
+    end
+  end
 end

@@ -28,7 +28,7 @@ RSpec.configure do |config|
   end
 
   config.before(:suite) do
-    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.strategy = :deletion
     DatabaseCleaner.clean_with(:truncation)
   end
 
@@ -41,9 +41,25 @@ RSpec.configure do |config|
   end
 end
 
-load "#{File.dirname(__FILE__)}/support/schema.rb"
+if ENV["UUID_TESTS"]
+  load "#{File.dirname(__FILE__)}/support/uuid_schema.rb"
+else
+  load "#{File.dirname(__FILE__)}/support/id_schema.rb"
+end
 
 require "#{File.dirname(__FILE__)}/support/models"
 require "#{File.dirname(__FILE__)}/support/application"
 require "#{File.dirname(__FILE__)}/support/configuration"
 require "#{File.dirname(__FILE__)}/support/controllers"
+
+if ENV["UUID_TESTS"]
+  require "securerandom"
+
+  ActiveSupport.on_load(:active_record) do
+    [Veri::Session, User, Client].each do |model_class|
+      model_class.before_create do
+        self.id = SecureRandom.uuid if id.blank?
+      end
+    end
+  end
+end

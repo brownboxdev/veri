@@ -8,10 +8,11 @@ Veri is a cookie-based authentication library for Ruby on Rails that provides es
 **Key Features:**
 
 - Cookie-based authentication with database-stored sessions
-- Supports multiple password hashing algorithms (argon2, bcrypt, scrypt)
+- Multiple password hashing algorithms (argon2, bcrypt, scrypt)
 - Granular session management and control
-- Built-in return path handling
+- Return path handling
 - User impersonation feature
+- Account lockout functionality
 
 > ⚠️ **Development Notice**<br>
 > Veri is functional but in early development. Breaking changes may occur in minor releases until v1.0!
@@ -24,6 +25,7 @@ Veri is a cookie-based authentication library for Ruby on Rails that provides es
   - [Password Management](#password-management)
   - [Controller Integration](#controller-integration)
   - [Authentication Sessions](#authentication-sessions)
+  - [Account Lockout](#account-lockout)
   - [View Helpers](#view-helpers)
   - [Testing](#testing)
 
@@ -137,7 +139,7 @@ Available methods:
 
 - `current_user` - Returns authenticated user or `nil`
 - `logged_in?` - Returns `true` if user is authenticated
-- `log_in(user)` - Authenticates user and creates session
+- `log_in(user)` - Authenticates user and creates session, returns `true` on success or `false` if account is locked
 - `log_out` - Terminates current session
 - `return_path` - Returns path user was accessing before authentication
 - `current_session` - Returns current authentication session
@@ -248,6 +250,23 @@ Veri::Session.terminate_all(user)
 Veri::Session.prune           # All sessions
 Veri::Session.prune(user)     # Specific user's sessions
 ```
+
+## Account Lockout
+
+Veri provides account lockout functionality to temporarily disable user accounts (for example, after too many failed login attempts or for security reasons).
+
+```rb
+# Lock a user account
+user.lock!
+
+# Unlock a user account
+user.unlock!
+
+# Check if account is locked
+user.locked?
+```
+
+When an account is locked, users cannot log in. If they're already logged in, their sessions will be terminated and they'll be treated as unauthenticated users.
 
 ## View Helpers
 

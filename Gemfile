@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 gemspec
 
-rails_version = ENV.fetch("RAILS_VERSION", "~> 7")
+rails_version = ENV.fetch("RAILS_VERSION", "~> 7.1")
 
 gem "argon2"
 gem "bcrypt"
@@ -10,7 +10,6 @@ gem "byebug"
 gem "database_cleaner-active_record"
 gem "dry-configurable"
 gem "dry-types"
-gem "grepfruit"
 gem "rails", rails_version
 gem "rake"
 gem "rspec"

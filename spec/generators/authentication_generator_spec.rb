@@ -11,6 +11,8 @@ RSpec.describe Veri::AuthenticationGenerator do
         def change
           add_column :my_users, :hashed_password, :text
           add_column :my_users, :password_updated_at, :datetime
+          add_column :my_users, :locked, :boolean, default: false, null: false
+          add_column :my_users, :locked_at, :datetime
 
           create_table :veri_sessions#{", id: :uuid" if args.include?("--uuid")} do |t|
             t.string :hashed_token, null: false, index: { unique: true }

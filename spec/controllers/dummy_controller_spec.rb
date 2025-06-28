@@ -75,6 +75,12 @@ RSpec.describe DummyController, type: :controller do
       end
     end
 
+    it "deletes the veri_token cookie" do
+      travel_to 2.hours.from_now do
+        expect { get :index }.to change { controller.send(:cookies).encrypted[:veri_token] }.from(be_present).to(be_nil)
+      end
+    end
+
     it "sets the return path if request format is HTML" do
       travel_to 2.hours.from_now do
         get :index
@@ -116,6 +122,12 @@ RSpec.describe DummyController, type: :controller do
       end
     end
 
+    it "deletes the veri_token cookie" do
+      travel_to 2.hours.from_now do
+        expect { get :index }.to change { controller.send(:cookies).encrypted[:veri_token] }.from(be_present).to(be_nil)
+      end
+    end
+
     it "sets the return path if request format is HTML" do
       travel_to 2.hours.from_now do
         get :index
@@ -128,6 +140,44 @@ RSpec.describe DummyController, type: :controller do
         get :index, format: :json
         expect(controller.return_path).to be_nil
       end
+    end
+  end
+
+  context "when user is logged in but account is locked" do
+    let(:user) { User.create!(locked: true) }
+
+    before do
+      user.update!(locked: false)
+      controller.log_in(user)
+      user.update!(locked: true)
+    end
+
+    it "does not allow access when request format is HTML" do
+      get :index
+      expect(response).to redirect_to(DummyApplication.routes.url_helpers.root_path)
+    end
+
+    it "does not allow access when request format is not HTML" do
+      get :index, format: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "terminates the session" do
+      expect { get :index }.to change(Veri::Session, :count).from(1).to(0)
+    end
+
+    it "deletes the veri_token cookie" do
+      expect { get :index }.to change { controller.send(:cookies).encrypted[:veri_token] }.from(be_present).to(be_nil)
+    end
+
+    it "does not set the return path if request format is HTML" do
+      get :index
+      expect(controller.return_path).to be_nil
+    end
+
+    it "does not set the return path if request format is not HTML" do
+      get :index, format: :json
+      expect(controller.return_path).to be_nil
     end
   end
 end
